@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TP APLICADA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.js" integrity="sha256-DrT5NfxfbHvMHux31Lkhxg42LY6of8TaYyK50jnxRnM=" crossorigin="anonymous"></script>
+    <style>
+        .center{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        *{
+            padding: 0;
+            margin: 0;
+            user-select: none;
+            -moz-user-select: none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+            -o-user-select: none;
+        }
+        .container{
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            height:100vh;
+        }
+        .img-container{
+            height:70vh;
+            position:relative;
+        }
+        .oven{
+            height:100%;
+        }
+        .cover-data{
+            position: absolute;
+            top: 4%;
+            left: 50%;
+            transform: translateX(-50%);
+            width:20%;
+            height: 12%;
+            background-color: black;
+            border-radius:5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2%;
+            font-size:3vh;
+            justify-content: space-around;
+        }
+        .data-text{
+            opacity: 0.7;
+            color: #38b632;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .hl{
+            background-color: white;
+            width:100%;
+            height: 2px;
+            opacity: 0.3;
+        }
+        /* CAMBIAR TEMPERATURA */
+        .camb-temp{
+            position: absolute;
+            width:14%;
+            height:14%;
+            border-radius:50%;
+            background-color: white;
+            top:4%;
+            left: 19%;
+            font-size:2vh;
+        }
+        .mns-temp{
+            z-index:20;
+            position: absolute;
+            top:-140%;
+            left:-135%;
+            background-color:blue;
+            border-radius:10px;
+            padding:10px;
+            width: 300%;
+            font-family: 'Orbitron', sans-serif;
+            color: white;
+            font-size:2vh;
+        }
+        .mns-temp::before{
+            content:"";
+            position: absolute;
+            width:30px;
+            height: 30px;
+            top:100%;
+            left:50%;
+            background-color: blue;
+            transform: rotate(45deg) translate(-50%, -50%);
+            z-index:-1;
+        }
+        /* CAMBIAR TIEMPO */
+        .camb-tiempo{
+            position: absolute;
+            width:14%;
+            height:14%;
+            border-radius:50%;
+            background-color: white;
+            top:4%;
+            left: 67%;
+            font-size:2vh;
+        }
+        .mns-tiempo{
+            z-index:20;
+            position: absolute;
+            top:-140%;
+            left:-90%;
+            background-color:blue;
+            border-radius:10px;
+            padding:10px;
+            width: 300%;
+            font-family: 'Orbitron', sans-serif;
+            color: white;
+            font-size:2vh;
+        }
+        .mns-tiempo::before{
+            content:"";
+            position: absolute;
+            width:30px;
+            height:30px;
+            top:100%;
+            left:40%;
+            background-color: blue;
+            transform: rotate(45deg) translate(-50%, -50%);
+            z-index:-1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="img-container">
+        <img class="oven" src="https://drive.google.com/uc?id=1tkjSmhtFZFrZf7JiNw-NDU8f2eQTBRPR" alt="">
+        <!-- MOSTRAR DATOS -->
+        <div class="cover-data">
+            <!-- TEMPERATURA -->
+            <div style="display:flex;flex-direction:row">
+                <span class="data-text temp"></span>
+            </div>
+            <!-- TIEMPO -->
+            <div class="hl"></div>
+            <div style="display:flex;flex-direction:row">
+                <span class="data-text tiempo"></span>
+            </div>
+        </div>
+        <!-- CAMBIAR TEMPERATURA -->
+        <div class="center camb-temp">
+            <span class="camb-temp-img center">TEMP</span>
+            <!-- MENSAJE -->
+            <div class="mns-temp">
+                Gira la manecilla con tu mouse para cambiar la temperatura.
+            </div>
+        </div>
+        <!-- CAMBIAR TIEMPO -->
+        <div class="camb-tiempo" style="display:flex;align-items:center;justify-content:center">
+            <span class="camb-tiempo-img center">TIEMPO</span>
+            <!-- MENSAJE -->
+            <div class="mns-tiempo">
+                Gira la manecilla con tu mouse para cambiar el tiempo de cocinado.
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Valores iniciales
+    $('.temp').html('160°');
+    $('.tiempo').html('5:00');
+    //
+    // CAMBIAR TEMPERATURA
+    //
+    let cambTempMouseDown = false;
+    $('.camb-temp').mousedown((e) => { actualizarTemperatura(e); cambTempMouseDown = true; });
+    $(document).mouseup(() => { cambTempMouseDown = false; });
+    $(document).mousemove((e) => { if (cambTempMouseDown) actualizarTemperatura(e); });
+    function actualizarTemperatura(e) {
+        let maxAngulo = 270;
+        let angulo = getAngulo(e); // minAngulo = 0;
+        if (angulo > maxAngulo) angulo = angulo < maxAngulo + (360 - maxAngulo) / 2 ? angulo = maxAngulo : 0;
+        let minTemp = 160;
+        let maxTemp = 230;
+        let difTemp = maxTemp - minTemp; // intervalo de temperaturas
+        // Hallar temperatura actual por regla de tres simple según el ángulo dado:
+        // difTemp -> maxAngulo
+        //       x -> angulo
+        // x = difTemp * angulo / maxAngulo
+        let tempActual = difTemp * angulo / maxAngulo + minTemp;
+        // Actualizar visor electrónico
+        $('.temp').html(tempActual.toFixed(2).toString() + '°');
+        // Actualizar posición de la manecilla
+        $('.camb-temp-img').css('transform', `rotate(${angulo}deg)`);
+    }
+    //
+    // CAMBIAR TIEMPO
+    //
+    let cambTiempoMouseDown = false;
+    $('.camb-tiempo').mousedown((e) => { actualizarTiempo(e); cambTiempoMouseDown = true; });
+    $(document).mouseup(() => { cambTiempoMouseDown = false; });
+    $(document).mousemove((e) => { if (cambTiempoMouseDown) actualizarTiempo(e); });
+    function actualizarTiempo(e) {
+        let maxAngulo = 270;
+        let angulo = getAngulo(e); // minAngulo = 0;
+        if (angulo > maxAngulo) angulo = angulo < maxAngulo + (360 - maxAngulo) / 2 ? angulo = maxAngulo : 0;
+        let minTemp = 5;
+        let maxTemp = 20;
+        let difTiempo = maxTemp - minTemp; // intervalo de tiempos
+        // Hallar temperatura actual por regla de tres simple según el ángulo dado:
+        // difTiempo -> maxAngulo
+        //         x -> angulo
+        // x = difTemp * angulo / maxAngulo
+        let tiempoActual = difTiempo * angulo / maxAngulo + minTemp;
+        // Actualizar visor electrónico
+        let tiempos = tiempoActual.toFixed(2).toString().split('.');
+        tiempos[1] = (parseInt(tiempos[1]) * 0.6).toFixed(0).toString();
+        $('.tiempo').html(tiempos.join(':'));
+        // Actualizar posición de la manecilla
+        $('.camb-tiempo-img').css('transform', `rotate(${angulo}deg)`);
+    }
+    //
+    // MÁS FUNCIONES
+    //
+    function getAngulo(e) {
+        let p0 = { x: $(e.target).offset().left + $(e.target).outerWidth() / 2, y: $(e.target).offset().top + $(e.target).outerHeight() / 2 };
+        let v2 = { x: e.pageX - p0.x, y: e.pageY - p0.y };
+        let v1 = { x: 0, y: -1 };
+        let a = Math.atan2(v1.x*v2.y-v1.y*v2.x, v1.x*v2.x+v1.y*v2.y)  * 180 / Math.PI;
+        return a < 0 ? a + 360 : a;
+    }
+</script>
+</body>
+</html>
