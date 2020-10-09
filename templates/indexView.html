@@ -22,7 +22,7 @@
         }
         .container{
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height:100vh;
@@ -61,6 +61,9 @@
             height: 2px;
             opacity: 0.3;
         }
+        .img{
+            height:100%;
+        }
         /* CAMBIAR TEMPERATURA */
         .camb-temp{
             position: absolute;
@@ -95,6 +98,12 @@
             background-color: blue;
             transform: rotate(45deg) translate(-50%, -50%);
             z-index:-1;
+        }
+        .camb-tiempo-img,
+        .camb-temp-img{
+            position: absolute;
+            width:60%;
+            height:60%;
         }
         /* CAMBIAR TIEMPO */
         .camb-tiempo{
@@ -131,12 +140,43 @@
             transform: rotate(45deg) translate(-50%, -50%);
             z-index:-1;
         }
+        /* INICIAR */
+        .btn-iniciar{
+            position: absolute;
+            color: white;
+            background-color: blue;
+            padding: 10px 20px;
+            border-radius:50px;
+            font-family:'Orbitron', sans-serif;
+            font-size: 30px;
+            margin-top:20px;
+            top: 100%;
+            transform:translateY(-200%);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-iniciar:hover{
+            box-shadow:0 0 5px 10px #6464ff;
+        }
+        .cocinando{
+            z-index:50;
+            width: 60%;
+            height: 40%;
+            position: absolute;
+            top:50%;
+            left:50%;
+            transform: translate(-50%, -30%);
+            background-color: red;
+            box-shadow:0 0 20px 20px red;
+            opacity:0.4;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="img-container">
-        <img class="oven" src="https://drive.google.com/uc?id=1tkjSmhtFZFrZf7JiNw-NDU8f2eQTBRPR" alt="">
+        <img class="oven" src="https://drive.google.com/uc?id=18SKVgL7k12QN0zQdo5M4TSFtfMhSbrrZ" alt="">
+        <div class="cocinando"></div>
         <!-- MOSTRAR DATOS -->
         <div class="cover-data">
             <!-- TEMPERATURA -->
@@ -151,7 +191,9 @@
         </div>
         <!-- CAMBIAR TEMPERATURA -->
         <div class="center camb-temp">
-            <span class="camb-temp-img center">TEMP</span>
+            <!--<span class="camb-temp-img center">TEMP</span>-->
+            <img class="img" src="https://drive.google.com/uc?id=1HfNFQrVggEOtYRafdMoM6pZhOBFRYNUv" alt="">
+            <img class="camb-temp-img img" src="https://drive.google.com/uc?id=1rOQPZBuWBkM3hd8b5uuLnb3cy5f3qvT0" alt="">
             <!-- MENSAJE -->
             <div class="mns-temp">
                 Gira la manecilla con tu mouse para cambiar la temperatura.
@@ -159,20 +201,31 @@
         </div>
         <!-- CAMBIAR TIEMPO -->
         <div class="camb-tiempo" style="display:flex;align-items:center;justify-content:center">
-            <span class="camb-tiempo-img center">TIEMPO</span>
+            <img class="img" src="https://drive.google.com/uc?id=1tBSicPWgJsqXe5V9IWGbOs1beWYanYW6" alt="">
+            <img class="camb-tiempo-img img" src="https://drive.google.com/uc?id=1rOQPZBuWBkM3hd8b5uuLnb3cy5f3qvT0" alt="">
             <!-- MENSAJE -->
             <div class="mns-tiempo">
                 Gira la manecilla con tu mouse para cambiar el tiempo de cocinado.
             </div>
         </div>
-
     </div>
+    <!-- INICIAR -->
+    <div class="btn-iniciar">START!</div>
 </div>
 
 <script>
+    let cocinando = false;
+    const initTemp = 160;
+    const initTiempo = getTiempo(5.00);
     // Valores iniciales
-    $('.temp').html('160°');
+    $('.temp').html(initTemp + '°');
     $('.tiempo').html('5:00');
+    $('.img').attr('draggable', false);
+    $('.cocinando').css('display', cocinando?'':'none');
+    $('.btn-iniciar').click(()=>{
+        cocinando = true;
+        alert('Falta obtener y mostrar datos desde el back-end...');
+    });
     //
     // CAMBIAR TEMPERATURA
     //
@@ -181,6 +234,7 @@
     $(document).mouseup(() => { cambTempMouseDown = false; });
     $(document).mousemove((e) => { if (cambTempMouseDown) actualizarTemperatura(e); });
     function actualizarTemperatura(e) {
+        if (cocinando) return;
         let maxAngulo = 270;
         let angulo = getAngulo(e); // minAngulo = 0;
         if (angulo > maxAngulo) angulo = angulo < maxAngulo + (360 - maxAngulo) / 2 ? angulo = maxAngulo : 0;
@@ -205,6 +259,7 @@
     $(document).mouseup(() => { cambTiempoMouseDown = false; });
     $(document).mousemove((e) => { if (cambTiempoMouseDown) actualizarTiempo(e); });
     function actualizarTiempo(e) {
+        if (cocinando) return;
         let maxAngulo = 270;
         let angulo = getAngulo(e); // minAngulo = 0;
         if (angulo > maxAngulo) angulo = angulo < maxAngulo + (360 - maxAngulo) / 2 ? angulo = maxAngulo : 0;
@@ -217,15 +272,19 @@
         // x = difTemp * angulo / maxAngulo
         let tiempoActual = difTiempo * angulo / maxAngulo + minTemp;
         // Actualizar visor electrónico
-        let tiempos = tiempoActual.toFixed(2).toString().split('.');
-        tiempos[1] = (parseInt(tiempos[1]) * 0.6).toFixed(0).toString();
-        $('.tiempo').html(tiempos.join(':'));
+        $('.tiempo').html(getTiempo(tiempoActual.toFixed(2)));
         // Actualizar posición de la manecilla
         $('.camb-tiempo-img').css('transform', `rotate(${angulo}deg)`);
     }
     //
     // MÁS FUNCIONES
     //
+    function getTiempo(t){
+        let tiempos = t.toString().split('.');
+        if (tiempos[1]) tiempos[1] = (parseInt(tiempos[1]) * 0.6).toFixed(0).toString();
+        else tiempos[1] = '00';
+        return tiempos.join(':');
+    }
     function getAngulo(e) {
         let p0 = { x: $(e.target).offset().left + $(e.target).outerWidth() / 2, y: $(e.target).offset().top + $(e.target).outerHeight() / 2 };
         let v2 = { x: e.pageX - p0.x, y: e.pageY - p0.y };
